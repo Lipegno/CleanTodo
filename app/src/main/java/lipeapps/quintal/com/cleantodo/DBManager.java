@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -18,7 +19,7 @@ public final class DBManager{
     DBHelper _helper;
     private static final String TODO_TABLE = "todo_items";
     private static final String DB_NAME = "todo_db.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
     private static Context _ctx;
 
     private DBManager(){
@@ -67,6 +68,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 "note text NOT NULL, " +
                 "done int NOT NULL " +
                 ")";
+
+        Log.i("DBManager", "updating database");
+
         db.execSQL(sql);
     }
 }
@@ -103,6 +107,14 @@ public class DBHelper extends SQLiteOpenHelper {
             result.add(cv);
         }
         return result;
+    }
+
+    public synchronized void updateNote(String note, int done){
+
+        SQLiteDatabase db = _helper.getWritableDatabase();
+
+        String sql = "UPDATE "+TODO_TABLE+" SET done="+done+" WHERE "+"note ='"+note+"'";
+        db.execSQL(sql);
     }
 
 }

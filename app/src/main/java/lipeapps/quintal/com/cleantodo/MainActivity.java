@@ -2,6 +2,7 @@ package lipeapps.quintal.com.cleantodo;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -76,24 +77,39 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent){
+        public View getView(final int position, View convertView, ViewGroup parent){
 
             if(convertView == null){
                 convertView = _inflater.inflate(_resource, null);
             }
             Log.i("MAIN", "printing note");
-            TextView item = (TextView) convertView.findViewById(R.id.main_item_text);
+            final TextView item = (TextView) convertView.findViewById(R.id.main_item_text);
             item.setText(_content.get(position).getAsString("item"));
+            final CheckBox check = (CheckBox)convertView.findViewById(R.id.item_done);
 
-            CheckBox check = (CheckBox)convertView.findViewById(R.id.item_done);
-            check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if(_content.get(position).getAsInteger("done")==1){
+                check.setChecked(true);
+                item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }else {
+                check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                }
-            });
-
+                        if(isChecked){
+                           // check.setChecked(true);
+                            _manager.updateNote(_content.get(position).getAsString("item"), 1);
+                            _content.get(position).put("done",1);
+                            item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                        }else{
+                            _manager.updateNote(_content.get(position).getAsString("item"),0);
+                            _content.get(position).put("done",0);
+                            item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                        }
+                    }
+                });
+            }
             return convertView;
         }
+
     }
 }
