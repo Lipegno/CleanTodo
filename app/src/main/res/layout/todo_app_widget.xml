@@ -1,0 +1,39 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="@dimen/widget_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="titulo"
+                android:id="@+id/note_text_widget"
+                android:textColor="#000000"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"/>
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:layout_weight="0.2"
+                android:onClick=""/>
+
+        </LinearLayout>
+        <ListView
+            android:id="@+id/todo_view_widget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#FF0000"
+            android:dividerHeight="4px"/>
+    </LinearLayout>
+
+</RelativeLayout>
