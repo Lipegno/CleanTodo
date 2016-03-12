@@ -4,7 +4,6 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -71,16 +70,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateWidgets(){
-            AppWidgetManager man = AppWidgetManager.getInstance(getApplicationContext());
-            int[] ids = man.getAppWidgetIds(
-                    new ComponentName(getApplicationContext(), TodoAppWidget.class));
-            Intent updateIntent = new Intent();
-            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            updateIntent.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
-          //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-        sendBroadcast(updateIntent);
+       /* AppWidgetManager man = AppWidgetManager.getInstance(getApplicationContext());
+        int[] ids = man.getAppWidgetIds(
+                new ComponentName(getApplicationContext(), TodoAppWidget.class));
+        Intent updateIntent = new Intent();
+        updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        updateIntent.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
+        //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
+        sendBroadcast(updateIntent);*/
+//
+//
+//        Intent updateIntent2 = new Intent();
+//        updateIntent2.setAction("RefreshDBIntent");
+//       // updateIntent2.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
+//        //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
+////        sendBroadcast(updateIntent2);
+//        //send to factory
+  //      man.notifyAppWidgetViewDataChanged(ids, R.layout.todo_app_widget);
 
-        send to factory
+        final AppWidgetManager mgr = AppWidgetManager.getInstance(getApplicationContext());
+        final ComponentName cn = new ComponentName(getApplicationContext(), TodoAppWidget.class);
+        mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.todo_view_widget);
+
     }
 
 

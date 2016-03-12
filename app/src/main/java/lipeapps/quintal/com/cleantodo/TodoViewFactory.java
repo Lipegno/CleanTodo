@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -36,6 +37,9 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
 
     //    for(String str:_content)
     //        Log.d("CONTENT",str);
+     //   IntentFilter filter = new IntentFilter();
+      //  filter.addAction("RefreshDBIntent");
+     //   _ctx.registerReceiver(this,filter);
 
         appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
@@ -43,14 +47,14 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
 
     @Override
     public void onCreate() {
-        Log.e(VIEW_FACT,"On create called");
+        Log.e(VIEW_FACT, "On create called");
 
-        REgister receiver
     }
 
     @Override
     public void onDataSetChanged() {
-        Log.e(VIEW_FACT,"On dataset changed called");
+        _manager = DBManager.getDBManager(_ctx);
+        _content = _manager.getNotes();
     }
 
     @Override
@@ -68,6 +72,9 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
     public RemoteViews getViewAt(int position) {
         RemoteViews row  = new RemoteViews(_ctx.getPackageName(),R.layout.todo_item);
         row.setTextViewText(R.id.todo_item_text,_content.get(position).getAsString("item"));
+
+        if(_content.get(position).getAsInteger("done")==1)
+              row.setInt(R.id.todo_item_text, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG | Paint.ANTI_ALIAS_FLAG);
 
         Intent i=new Intent();
         Bundle extras=new Bundle();
@@ -103,6 +110,9 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.i("View factory", "Data received "+intent.toString());
+        _manager = DBManager.getDBManager(_ctx);
+        _content = _manager.getNotes();
 
     }
 }
