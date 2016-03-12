@@ -94,7 +94,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public synchronized ArrayList<ContentValues> getNotes(){
 
         SQLiteDatabase    db = _helper.getReadableDatabase();
-        ArrayList<ContentValues> result  = new ArrayList<ContentValues>();
+        ArrayList<ContentValues> result_temp  = new ArrayList<ContentValues>();
 
         String sql = "SELECT note,done FROM "+TODO_TABLE;
 
@@ -103,10 +103,17 @@ public class DBHelper extends SQLiteOpenHelper {
         while(c.moveToNext()) {
             ContentValues cv = new ContentValues();
             cv.put("item",c.getString(0));
-            cv.put("done",c.getInt(1));
-            result.add(cv);
+            cv.put("done", c.getInt(1));
+
+            if(c.getInt(1)==0)
+              result_temp.add(0,cv);
+            else
+               result_temp.add(cv);
+
         }
-        return result;
+
+
+        return result_temp;
     }
 
     public synchronized void updateNote(String note, int done){

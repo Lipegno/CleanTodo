@@ -24,7 +24,8 @@ import lipeapps.quintal.com.cleantodo.TodoService;
 public class TodoAppWidget extends AppWidgetProvider {
 
     public final static String EXTRA_WORD = "dawg";
-
+    public static final String WIDGET_IDS_KEY ="appwidgetproviderwidgetids";
+    public static final String WIDGET_DATA_KEY ="appwidgetproviderwidgetdata";
 
     ListView _todoList;
     EditText _note;
@@ -48,14 +49,14 @@ public class TodoAppWidget extends AppWidgetProvider {
             RemoteViews widget=new RemoteViews(ctxt.getPackageName(),
                     R.layout.todo_app_widget);
 
-            widget.setRemoteAdapter(appWidgetIds[i], R.id.todo_view_widget,
+            widget.setRemoteAdapter(R.id.todo_view_widget,
                     svcIntent);
 
             Intent clickIntent=new Intent(ctxt, MainActivity.class);
             PendingIntent clickPI=PendingIntent
                     .getActivity(ctxt, 0,
                             clickIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
+                            PendingIntent.FLAG_CANCEL_CURRENT);
 
             widget.setPendingIntentTemplate(R.id.todo_view_widget, clickPI);
 
@@ -63,6 +64,17 @@ public class TodoAppWidget extends AppWidgetProvider {
         }
         super.onUpdate(ctxt, appWidgetManager, appWidgetIds);
     }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+       if (intent.hasExtra(WIDGET_IDS_KEY)) {
+            int[] ids = intent.getExtras().getIntArray(WIDGET_IDS_KEY);
+            this.onUpdate(context, AppWidgetManager.getInstance(context), ids);
+        } else super.onReceive(context, intent);
+
+        Log.e("New data receiver", "calhow aqui");
+    }
+
  /*
     @Override
     public void onEnabled(Context context) {
@@ -105,6 +117,28 @@ public class TodoAppWidget extends AppWidgetProvider {
             item.setText(_content.get(position));
             return convertView;
         }
+    }*/
+
+   /*private class NewDataBroadCastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)){
+                updateWidgetItemList(context);
+            }
+        }
+
+        private void updateWidgetItemList(Context context) {
+//            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.todo_app_widget);
+//
+//            //REMEMBER TO ALWAYS REFRESH YOUR BUTTON CLICK LISTENERS!!!
+//            remoteViews.setOnClickPendingIntent(R.id.widget_button, MyWidgetProvider.buildButtonPendingIntent(context));
+//
+//            pushWidgetUpdate(context.getApplicationContext(), remoteViews);
+
+            Log.e("New data receiver", "calhow aqui");
+        }
+
     }*/
 }
 

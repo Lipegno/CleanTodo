@@ -1,7 +1,10 @@
 package lipeapps.quintal.com.cleantodo;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import layout.TodoAppWidget;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,11 +62,25 @@ public class MainActivity extends AppCompatActivity {
             ContentValues cv = new ContentValues();
             cv.put("item",note);
             cv.put("done",0);
-            _content.add(cv);
+            _content.add(0,cv);
             _myAdapter.notifyDataSetChanged();
             _note.setText("");
             //updateList();
+            updateWidgets();
         }
+    }
+
+    private void updateWidgets(){
+            AppWidgetManager man = AppWidgetManager.getInstance(getApplicationContext());
+            int[] ids = man.getAppWidgetIds(
+                    new ComponentName(getApplicationContext(), TodoAppWidget.class));
+            Intent updateIntent = new Intent();
+            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            updateIntent.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
+          //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
+        sendBroadcast(updateIntent);
+
+        send to factory
     }
 
 
@@ -91,23 +110,28 @@ public class MainActivity extends AppCompatActivity {
                 check.setChecked(true);
                 item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             }else {
-                check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                        if(isChecked){
-                           // check.setChecked(true);
-                            _manager.updateNote(_content.get(position).getAsString("item"), 1);
-                            _content.get(position).put("done",1);
-                            item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                        }else{
-                            _manager.updateNote(_content.get(position).getAsString("item"),0);
-                            _content.get(position).put("done",0);
-                            item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                        }
-                    }
-                });
+                check.setChecked(false);
+                item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             }
+
+            check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                    if(isChecked){
+                        // check.setChecked(true);
+                        _manager.updateNote(_content.get(position).getAsString("item"), 1);
+                        _content.get(position).put("done",1);
+                        item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    }else{
+                        _manager.updateNote(_content.get(position).getAsString("item"),0);
+                        _content.get(position).put("done",0);
+                        item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                    }
+                }
+            });
+
             return convertView;
         }
 

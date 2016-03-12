@@ -1,6 +1,7 @@
 package lipeapps.quintal.com.cleantodo;
 
 import android.appwidget.AppWidgetManager;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -16,12 +17,14 @@ import layout.TodoAppWidget;
 /**
  * Created by Filipe on 27/02/2016.
  */
-public class TodoViewFactory implements RemoteViewsService.RemoteViewsFactory {
+public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsService.RemoteViewsFactory {
 
     private ArrayList<ContentValues> _content;
     private Context _ctx;
     private DBManager _manager;
     private int appWidgetId;
+
+    private static final String VIEW_FACT = "View factory";
 
     public TodoViewFactory(Context ctx, Intent intent){
         this._ctx = ctx;
@@ -40,21 +43,24 @@ public class TodoViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public void onCreate() {
+        Log.e(VIEW_FACT,"On create called");
 
+        REgister receiver
     }
 
     @Override
     public void onDataSetChanged() {
-
+        Log.e(VIEW_FACT,"On dataset changed called");
     }
 
     @Override
     public void onDestroy() {
-
+        Log.e(VIEW_FACT,"On destroy called");
     }
 
     @Override
     public int getCount() {
+        Log.e(VIEW_FACT,"On getCount called");
         return _content.size();
     }
 
@@ -70,7 +76,7 @@ public class TodoViewFactory implements RemoteViewsService.RemoteViewsFactory {
         i.putExtras(extras);
         row.setOnClickFillInIntent(R.id.todo_item_text, i);
 
-        Log.d("CONTENT", "drawing items");
+        Log.d("CONTENT", "drawing items "+_content.get(position).getAsString("item"));
 
         return row;
     }
@@ -93,5 +99,10 @@ public class TodoViewFactory implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public boolean hasStableIds() {
         return true;
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+
     }
 }
