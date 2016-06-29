@@ -2,6 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialKeyguardLayout="@layout/todo_app_widget"
     android:initialLayout="@layout/todo_app_widget"
+    android:previewImage="@drawable/widget_thumb"
     android:minHeight="110dp"
     android:minWidth="110dp"
     android:resizeMode="horizontal|vertical"

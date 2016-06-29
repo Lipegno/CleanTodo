@@ -19,7 +19,7 @@ public final class DBManager{
     DBHelper _helper;
     private static final String TODO_TABLE = "todo_items";
     private static final String DB_NAME = "todo_db.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 8;
     private static Context _ctx;
 
     private DBManager(){
@@ -49,10 +49,11 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        String sql = "CREATE TABLE "+TODO_TABLE+" (" +
+        String  sql = "CREATE TABLE "+TODO_TABLE+" (" +
                 "id  integer PRIMARY KEY AUTOINCREMENT, " +
                 "note text NOT NULL, " +
-                "done int NOT NULL " +
+                "done int NOT NULL, " +
+                "tms real NOT NULL" +
                 ")";
         db.execSQL(sql);
     }
@@ -66,7 +67,8 @@ public class DBHelper extends SQLiteOpenHelper {
         sql = "CREATE TABLE "+TODO_TABLE+" (" +
                 "id  integer PRIMARY KEY AUTOINCREMENT, " +
                 "note text NOT NULL, " +
-                "done int NOT NULL " +
+                "done int NOT NULL, " +
+                "tms real NOT NULL" +
                 ")";
 
         Log.i("DBManager", "updating database");
@@ -77,11 +79,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public synchronized boolean addNote(String note){
         SQLiteStatement stm = null;
+        long tms            = System.currentTimeMillis();
+        SQLiteDatabase _db  = _helper.getReadableDatabase();
 
-        SQLiteDatabase _db = _helper.getReadableDatabase();
-
-        String sql = "INSERT INTO "+TODO_TABLE+"(note,done)" +
-                " VALUES('"+note+"',"+0+")";
+        String sql = "INSERT INTO "+TODO_TABLE+"(note,done,tms)" +
+                " VALUES('"+note+"',"+0+","+tms+")";
 
         stm = _db.compileStatement(sql);
 
@@ -96,7 +98,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase    db = _helper.getReadableDatabase();
         ArrayList<ContentValues> result_temp  = new ArrayList<ContentValues>();
 
-        String sql = "SELECT note,done FROM "+TODO_TABLE;
+        String sql = "SELECT note,done FROM "+TODO_TABLE+" order by tms desc";
 
         Cursor c = db.rawQuery(sql, null);
 
@@ -121,6 +123,12 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = _helper.getWritableDatabase();
 
         String sql = "UPDATE "+TODO_TABLE+" SET done="+done+" WHERE "+"note ='"+note+"'";
+        db.execSQL(sql);
+    }
+
+    public synchronized void deleteNote(String note){
+        SQLiteDatabase db = _helper.getWritableDatabase();
+        String sql = "DELETE FROM "+TODO_TABLE+" WHERE "+"note ='"+note+"'";
         db.execSQL(sql);
     }
 

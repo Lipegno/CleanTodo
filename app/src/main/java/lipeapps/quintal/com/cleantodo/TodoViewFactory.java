@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,7 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
     private Context _ctx;
     private DBManager _manager;
     private int appWidgetId;
+    private SharedPreferences _sp;
 
     private static final String VIEW_FACT = "View factory";
 
@@ -43,6 +45,8 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
 
         appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
+
+        _sp = _ctx.getSharedPreferences("cleantodoprefs",Context.MODE_PRIVATE);
     }
 
     @Override
@@ -53,7 +57,6 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
 
     @Override
     public void onDataSetChanged() {
-        _manager = DBManager.getDBManager(_ctx);
         _content = _manager.getNotes();
     }
 
@@ -68,13 +71,30 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
         return _content.size();
     }
 
+    void adjustTextSize(RemoteViews v,int size){
+
+        if(size==1){
+            v.setFloat(R.id.todo_item_text, "setTextSize", _ctx.getResources().getDimension(R.dimen.textSizeSmall));
+        }
+        else if(size==2){
+            v.setFloat(R.id.todo_item_text, "setTextSize", _ctx.getResources().getDimension(R.dimen.textSizeMedium));
+        }
+        else if(size==3){
+            v.setFloat(R.id.todo_item_text, "setTextSize", _ctx.getResources().getDimension(R.dimen.textSizeBig));
+        }
+
+    }
     @Override
     public RemoteViews getViewAt(int position) {
         RemoteViews row  = new RemoteViews(_ctx.getPackageName(),R.layout.todo_item);
         row.setTextViewText(R.id.todo_item_text,_content.get(position).getAsString("item"));
+        int textSize =  _sp.getInt("textSize",0);
+        adjustTextSize(row, textSize);
 
-        if(_content.get(position).getAsInteger("done")==1)
-              row.setInt(R.id.todo_item_text, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG | Paint.ANTI_ALIAS_FLAG);
+       if(_content.get(position).getAsInteger("done")==1)
+           row.setInt(R.id.todo_item_text, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG | Paint.ANTI_ALIAS_FLAG);
+       else
+           row.setInt(R.id.todo_item_text, "setPaintFlags", 0);
 
         Intent i=new Intent();
         Bundle extras=new Bundle();
@@ -83,7 +103,7 @@ public class TodoViewFactory extends BroadcastReceiver  implements RemoteViewsSe
         i.putExtras(extras);
         row.setOnClickFillInIntent(R.id.todo_item_text, i);
 
-        Log.d("CONTENT", "drawing items "+_content.get(position).getAsString("item"));
+       // Log.d("CONTENT", "drawing items "+_content.get(position).getAsString("item"));
 
         return row;
     }

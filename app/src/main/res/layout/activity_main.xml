@@ -20,21 +20,25 @@
 
             <EditText
                 android:id="@+id/note_text"
+                android:textColor="#212121"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.8"/>
+
             <Button
-                android:layout_width="0dp"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="+"
-                android:layout_weight="0.2"
                 android:onClick="handlePlusClick"/>
 
         </LinearLayout>
     <ListView
         android:id="@+id/todo_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10.0sp"/>
     </LinearLayout>
 
 </RelativeLayout>

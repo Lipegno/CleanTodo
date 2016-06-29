@@ -8,13 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.RemoteViews;
 
-import java.util.ArrayList;
-
-import lipeapps.quintal.com.cleantodo.DBManager;
 import lipeapps.quintal.com.cleantodo.MainActivity;
 import lipeapps.quintal.com.cleantodo.R;
 import lipeapps.quintal.com.cleantodo.TodoService;
@@ -25,15 +20,13 @@ import lipeapps.quintal.com.cleantodo.TodoService;
 public class TodoAppWidget extends AppWidgetProvider {
 
     public final static String EXTRA_WORD = "dawg";
-    public static final String WIDGET_IDS_KEY ="appwidgetproviderwidgetids";
-    public static final String WIDGET_DATA_KEY ="appwidgetproviderwidgetdata";
 
-    ListView _todoList;
+   /*ListView _todoList;
     EditText _note;
     DBManager _manager;
     ArrayList<String> _content;
     AppWidgetManager _widget_manager;
-
+*/
 
     @Override
     public void onUpdate(Context ctxt, AppWidgetManager appWidgetManager, int[] appWidgetIds) {

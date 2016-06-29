@@ -4,16 +4,20 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,15 +28,22 @@ import layout.TodoAppWidget;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainAct";
     ListView _todoList;
     EditText _note;
     DBManager _manager;
     TodoAdapter _myAdapter;
     ArrayList<ContentValues> _content;
+    private String _note_to_delete;
+    SharedPreferences _sp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.drawable.logo);
+
         _todoList = (ListView)findViewById(R.id.todo_view);
         _note     = (EditText)findViewById(R.id.note_text);
         _content = new ArrayList<ContentValues>();
@@ -43,16 +54,55 @@ public class MainActivity extends AppCompatActivity {
         _myAdapter = new TodoAdapter(this, _content,R.layout.item,getLayoutInflater());
         _todoList.setAdapter(_myAdapter);
         _myAdapter.notifyDataSetChanged();
+
+        _sp = this.getSharedPreferences("cleantodoprefs",Context.MODE_PRIVATE);
+
     }
 
-    private void updateList(){
+    @Override
+    protected void onStop() {
+        super.onStop();
+        updateWidgets();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.small) {
+            Log.d(TAG, "small selected");
+            _sp.edit().putInt("textSize",1).commit();
+        }else if(item.getItemId()==R.id.medium) {
+            Log.d(TAG, "medium selected");
+            _sp.edit().putInt("textSize",2).commit();
+        }else if(item.getItemId()==R.id.big) {
+            Log.d(TAG, "big selected");
+            _sp.edit().putInt("textSize",3).commit();
+        }
+        _myAdapter.notifyDataSetChanged();
+        return true;
+    }
+/*private void updateList(){
         _content = _manager.getNotes();
+        printContentDebug();
         _myAdapter.notifyDataSetChanged();
 
+    }*/
 
+    private void printContentDebug(){
+        //Log.e(TAG, " ---------------------");
+        for(ContentValues c:_content){
+            Log.i(TAG,"item -> "+c.getAsString("item"));
+        }
+       // Log.e(TAG, " ---------------------");
     }
 
-    public void handlePlusClick(View v){
+    public void handlePlusClick(View v) {
         String note = _note.getText().toString();
 
         if(!note.equals("")) {
@@ -61,32 +111,28 @@ public class MainActivity extends AppCompatActivity {
             ContentValues cv = new ContentValues();
             cv.put("item",note);
             cv.put("done",0);
-            _content.add(0,cv);
+            cv.put("tms", System.currentTimeMillis());
+            addItemList(_content,cv);
             _myAdapter.notifyDataSetChanged();
             _note.setText("");
-            //updateList();
             updateWidgets();
+            printContentDebug();
         }
     }
 
+    private void addItemList(ArrayList<ContentValues> list, ContentValues item){
+        int index = 0;
+        for(int i=0;i<list.size();i++){
+            if(list.get(i).getAsInteger("done")==0)
+                index++;
+            else
+                break;
+        }
+        list.add(index, item);
+
+    }
+
     private void updateWidgets(){
-       /* AppWidgetManager man = AppWidgetManager.getInstance(getApplicationContext());
-        int[] ids = man.getAppWidgetIds(
-                new ComponentName(getApplicationContext(), TodoAppWidget.class));
-        Intent updateIntent = new Intent();
-        updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        updateIntent.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
-        //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-        sendBroadcast(updateIntent);*/
-//
-//
-//        Intent updateIntent2 = new Intent();
-//        updateIntent2.setAction("RefreshDBIntent");
-//       // updateIntent2.putExtra(TodoAppWidget.WIDGET_IDS_KEY, ids);
-//        //  updateIntent.putExtra(MyWidgetProvider.WIDGET_DATA_KEY, data);
-////        sendBroadcast(updateIntent2);
-//        //send to factory
-  //      man.notifyAppWidgetViewDataChanged(ids, R.layout.todo_app_widget);
 
         final AppWidgetManager mgr = AppWidgetManager.getInstance(getApplicationContext());
         final ComponentName cn = new ComponentName(getApplicationContext(), TodoAppWidget.class);
@@ -94,6 +140,40 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        menu.setHeaderTitle("Note Options");
+        menu.add(0, v.getId(), 0, "delete");
+
+        _note_to_delete = ((TextView)v).getText().toString();
+
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        if(item.getTitle().equals("delete")) {
+
+            Log.e(TAG,"Before delete");
+            printContentDebug();
+            int last_index = _content.size()-1;
+            for(int i=0; i<_content.size();i++){
+                Log.d(TAG,"looking for "+_note_to_delete+" found "+_content.get(i).getAsString("item"));
+                if(_content.get(i).getAsString("item").equals(_note_to_delete)) {
+                    _manager.deleteNote(_note_to_delete);
+                    _content.remove(i);
+                    _myAdapter.notifyDataSetChanged();
+                    break;
+                }
+
+            }
+        }
+
+        return true;
+
+    }
 
     private class TodoAdapter extends ArrayAdapter{
 
@@ -106,43 +186,66 @@ public class MainActivity extends AppCompatActivity {
             _resource = resource;
         }
 
+        View adjustTextSize(View v,int size){
+
+            if(size==1){
+                ((TextView)v).setTextSize(getResources().getDimension(R.dimen.textSizeSmall));
+            }else if(size==2){
+                ((TextView)v).setTextSize(getResources().getDimension(R.dimen.textSizeMedium));
+            }else if(size==3){
+                ((TextView)v).setTextSize(getResources().getDimension(R.dimen.textSizeBig));
+            }
+
+            return v;
+        }
+
         @Override
         public View getView(final int position, View convertView, ViewGroup parent){
 
             if(convertView == null){
                 convertView = _inflater.inflate(_resource, null);
             }
-            Log.i("MAIN", "printing note");
-            final TextView item = (TextView) convertView.findViewById(R.id.main_item_text);
-            item.setText(_content.get(position).getAsString("item"));
-            final CheckBox check = (CheckBox)convertView.findViewById(R.id.item_done);
 
-            if(_content.get(position).getAsInteger("done")==1){
-                check.setChecked(true);
-                item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            }else {
+            if(position<_content.size()) {
 
-                check.setChecked(false);
-                item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            }
+                final TextView item = (TextView) convertView.findViewById(R.id.main_item_text);
+                int textSize =  _sp.getInt("textSize",0);
+                adjustTextSize(item,textSize);
+                item.setText(_content.get(position).getAsString("item"));
+                final CheckBox check = (CheckBox) convertView.findViewById(R.id.item_done);
 
-            check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.i(TAG, "Dealing with " + _content.get(position).getAsString("item") + " status: " + _content.get(position).getAsString("done"));
 
-                    if(isChecked){
-                        // check.setChecked(true);
-                        _manager.updateNote(_content.get(position).getAsString("item"), 1);
-                        _content.get(position).put("done",1);
-                        item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                    }else{
-                        _manager.updateNote(_content.get(position).getAsString("item"),0);
-                        _content.get(position).put("done",0);
-                        item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-                    }
+                if (_content.get(position).getAsInteger("done") == 1) {
+                    check.setChecked(true);
+                    item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else if (_content.get(position).getAsInteger("done") == 0){
+                    check.setChecked(false);
+                    item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
                 }
-            });
 
+
+
+                check.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (check.isChecked()){
+                            //check.setChecked(true);
+                            _manager.updateNote(_content.get(position).getAsString("item"), 1);
+                            _content.get(position).put("done", 1);
+                            item.setPaintFlags(item.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                        } else {
+                            _manager.updateNote(_content.get(position).getAsString("item"), 0);
+                            _content.get(position).put("done", 0);
+                            item.setPaintFlags(item.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                          //  check.setChecked(false);
+                        }
+
+                    }
+                });
+
+                registerForContextMenu(item);
+            }
             return convertView;
         }
 

@@ -8,9 +8,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.8"
-        android:textColor="#FF0000"
+        android:textColor="#FFFFFF"
+        android:layout_margin="12sp"
+        android:paddingLeft="22sp"
         android:text="item"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:background="#00FFFFFF"
+        android:textSize="6sp" />
 
     <!--<LinearLayout-->
         <!--android:layout_width="0dp"-->
